@@ -72,7 +72,7 @@ contract Controller is Base, TokenType {
      */
     function receiveInbound(
         uint32 siblingChainSlug_,
-        bytes memory payload_
+        bytes calldata payload_
     ) external payable override nonReentrant {
         (
             address receiver,
