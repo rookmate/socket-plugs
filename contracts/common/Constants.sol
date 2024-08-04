@@ -17,5 +17,7 @@ bytes32 constant LIMIT_EXECUTION_YIELD_TOKEN_HOOK = keccak256(
     "LIMIT_EXECUTION_YIELD_TOKEN_HOOK"
 );
 
+bytes32 constant ERC1155_VAULT = keccak256("ERC1155_VAULT");
+bytes32 constant ERC721_VAULT = keccak256("ERC721_VAULT");
 bytes32 constant ERC20_VAULT = keccak256("ERC20_VAULT");
 bytes32 constant NATIVE_VAULT = keccak256("NATIVE_VAULT");
