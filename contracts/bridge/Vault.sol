@@ -158,7 +158,7 @@ contract Vault is Base, TokenType {
         address receiver_,
         uint256 amount_,
         bytes memory extraData_
-    ) internal {
+    ) internal virtual {
         if (amount_ == 0) return;
 
         if (bridgeType == NATIVE_VAULT) {
@@ -193,7 +193,10 @@ contract Vault is Base, TokenType {
      * @param amount_ The amount of tokens to receive. For ERC721, this is ignored, and for ERC1155, it represents the amount.
      * @param extraData_ Additional data used to decode the token ID for ERC721 and ERC1155 receptions.
      */
-    function _receiveTokens(uint256 amount_, bytes memory extraData_) internal {
+    function _receiveTokens(
+        uint256 amount_,
+        bytes memory extraData_
+    ) internal virtual {
         if (amount_ == 0) return;
 
         if (bridgeType == NATIVE_VAULT) {
