@@ -6,6 +6,8 @@ import "../common/TokenType.sol";
 import "solmate/tokens/ERC20.sol";
 import "solmate/tokens/ERC721.sol";
 import "solmate/tokens/ERC1155.sol";
+import {IMintableERC721} from "../interfaces/IMintableERC721.sol";
+import {IMintableERC1155} from "../interfaces/IMintableERC1155.sol";
 
 /**
  * @title Controller
@@ -165,7 +167,7 @@ contract Controller is Base, TokenType {
         if (bridgeType == ERC20_CONTROLLER) {
             totalMinted -= burnAmount_;
             IMintableERC20(token).burn(user_, burnAmount_);
-        } /*else if (bridgeType == ERC721_CONTROLLER) {
+        } else if (bridgeType == ERC721_CONTROLLER) {
             uint256 tokenId = decodeTokenId(extraData_);
             totalMinted -= 1;
             ERC721(token).safeTransferFrom(user_, address(this), tokenId);
@@ -173,11 +175,17 @@ contract Controller is Base, TokenType {
         } else if (bridgeType == ERC1155_CONTROLLER) {
             uint256 tokenId = decodeTokenId(extraData_);
             totalMinted -= burnAmount_;
-            ERC1155(token).safeTransferFrom(user_, address(this), tokenId, burnAmount_, "");
+            ERC1155(token).safeTransferFrom(
+                user_,
+                address(this),
+                tokenId,
+                burnAmount_,
+                ""
+            );
             IMintableERC1155(token).burn(address(this), tokenId, burnAmount_);
         } else {
             revert("Unsupported bridge type");
-        }*/
+        }
     }
 
     /**
@@ -202,7 +210,7 @@ contract Controller is Base, TokenType {
         if (bridgeType == ERC20_CONTROLLER) {
             totalMinted += mintAmount_;
             IMintableERC20(token).mint(user_, mintAmount_);
-        } /*else if (bridgeType == ERC721_CONTROLLER) {
+        } else if (bridgeType == ERC721_CONTROLLER) {
             uint256 tokenId = decodeTokenId(extraData_);
             totalMinted += 1;
             IMintableERC721(token).mint(user_, tokenId);
@@ -212,6 +220,6 @@ contract Controller is Base, TokenType {
             IMintableERC1155(token).mint(user_, tokenId, mintAmount_, "");
         } else {
             revert("Unsupported bridge type");
-        }*/
+        }
     }
 }
