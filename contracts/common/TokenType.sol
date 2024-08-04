@@ -52,7 +52,19 @@ contract TokenType {
 
     function isERC20(address token) internal view returns (bool) {
         try ERC20(token).totalSupply() {
-            return ERC20(token).balanceOf(address(this)) == 0; // Simple check
+            try
+                ERC721(token).supportsInterface(type(ERC721).interfaceId)
+            returns (bool supports721) {
+                if (supports721) return false;
+            } catch {}
+
+            try
+                ERC1155(token).supportsInterface(type(ERC1155).interfaceId)
+            returns (bool supports1155) {
+                if (supports1155) return false;
+            } catch {}
+
+            return true;
         } catch {
             return false;
         }
@@ -60,7 +72,7 @@ contract TokenType {
 
     function isERC721(address token) internal view returns (bool) {
         try ERC721(token).supportsInterface(type(ERC721).interfaceId) {
-            return ERC721(token).ownerOf(0) == address(0); // Simple check
+            return true;
         } catch {
             return false;
         }
@@ -68,7 +80,7 @@ contract TokenType {
 
     function isERC1155(address token) internal view returns (bool) {
         try ERC1155(token).supportsInterface(type(ERC1155).interfaceId) {
-            return ERC1155(token).balanceOf(address(this), 0) == 0; // Simple check
+            return true;
         } catch {
             return false;
         }
