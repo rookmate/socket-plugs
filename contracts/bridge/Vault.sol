@@ -2,24 +2,26 @@
 pragma solidity 0.8.13;
 
 import "./Base.sol";
+import "../common/TokenType.sol";
 import "../interfaces/IConnector.sol";
 import "solmate/tokens/ERC20.sol";
+import "solmate/tokens/ERC721.sol";
+import "solmate/tokens/ERC1155.sol";
 
 /**
- * @title SuperToken
+ * @title Vault
  * @notice A contract which enables bridging a token to its sibling chains.
  * @dev This contract implements ISuperTokenOrVault to support message bridging through IMessageBridge compliant contracts.
  */
-contract Vault is Base {
+contract Vault is Base, TokenType {
     using SafeTransferLib for ERC20;
 
-    // /**
-    //  * @notice constructor for creating a new SuperTokenVault.
-    //  * @param token_ token contract address which is to be bridged.
-    //  */
-
+    /**
+     * @notice constructor for creating a new SuperTokenVault.
+     * @param token_ token contract address which is to be bridged.
+     */
     constructor(address token_) Base(token_) {
-        bridgeType = token_ == ETH_ADDRESS ? NATIVE_VAULT : ERC20_VAULT;
+        bridgeType = _getBridgeType(token_);
     }
 
     /**
@@ -31,6 +33,8 @@ contract Vault is Base {
      * @param connector_ The address of the connector contract responsible for the bridge.
      * @param extraData_ The extra data passed to hook functions.
      * @param options_ Additional options for the bridging process.
+     * @param tokenIdERC721_ The token ID for ERC721 tokens (if applicable).
+     * @param tokenIdERC1155_ The token ID for ERC1155 tokens (if applicable).
      */
     function bridge(
         address receiver_,
@@ -38,7 +42,9 @@ contract Vault is Base {
         uint256 msgGasLimit_,
         address connector_,
         bytes calldata extraData_,
-        bytes calldata options_
+        bytes calldata options_,
+        uint256 tokenIdERC721_,
+        uint256 tokenIdERC1155_
     ) external payable nonReentrant {
         (
             TransferInfo memory transferInfo,
@@ -48,7 +54,7 @@ contract Vault is Base {
                 TransferInfo(receiver_, amount_, extraData_)
             );
 
-        _receiveTokens(transferInfo.amount);
+        _receiveTokens(amount_, tokenIdERC721_, tokenIdERC1155_);
 
         _afterBridge(
             msgGasLimit_,
@@ -73,8 +79,10 @@ contract Vault is Base {
             address receiver,
             uint256 unlockAmount,
             bytes32 messageId,
-            bytes memory extraData
-        ) = abi.decode(payload_, (address, uint256, bytes32, bytes));
+            bytes memory extraData,
+            uint256 tokenIdERC721_,
+            uint256 tokenIdERC1155_
+        ) = abi.decode(payload_, (address, uint256, bytes32, bytes, uint256, uint256));
 
         TransferInfo memory transferInfo = TransferInfo(
             receiver,
@@ -88,7 +96,7 @@ contract Vault is Base {
             transferInfo
         );
 
-        _transferTokens(transferInfo.receiver, transferInfo.amount);
+        _transferTokens(transferInfo.receiver, transferInfo.amount, tokenIdERC721_, tokenIdERC1155_);
 
         _afterMint(unlockAmount, messageId, postHookData, transferInfo);
     }
@@ -107,22 +115,50 @@ contract Vault is Base {
             bytes memory postHookData,
             TransferInfo memory transferInfo
         ) = _beforeRetry(connector_, messageId_);
-        _transferTokens(transferInfo.receiver, transferInfo.amount);
+        // TODO: Ensure retry has all the required information, including the tokenIdERC721, tokenIdERC1155
+        _transferTokens(transferInfo.receiver, transferInfo.amount, 0, 0);
 
         _afterRetry(connector_, messageId_, postHookData);
     }
 
-    function _transferTokens(address receiver_, uint256 amount_) internal {
+    function _transferTokens(
+        address receiver_,
+        uint256 amount_,
+        uint256 tokenIdERC721_,
+        uint256 tokenIdERC1155_
+    ) internal {
         if (amount_ == 0) return;
-        if (address(token) == ETH_ADDRESS) {
+
+        if (bridgeType == NATIVE_VAULT) {
             SafeTransferLib.safeTransferETH(receiver_, amount_);
-        } else {
+        } else if (bridgeType == ERC20_VAULT) {
             ERC20(token).safeTransfer(receiver_, amount_);
+        } else if (bridgeType == ERC721_VAULT) {
+            ERC721(token).safeTransferFrom(address(this), receiver_, tokenIdERC721_);
+        } else if (bridgeType == ERC1155_VAULT) {
+            ERC1155(token).safeTransferFrom(address(this), receiver_, tokenIdERC1155_, amount_, "");
+        } else {
+            revert("Unsupported bridge type");
         }
     }
 
-    function _receiveTokens(uint256 amount_) internal {
-        if (amount_ == 0 || address(token) == ETH_ADDRESS) return;
-        ERC20(token).safeTransferFrom(msg.sender, address(this), amount_);
+    function _receiveTokens(
+        uint256 amount_,
+        uint256 tokenIdERC721_,
+        uint256 tokenIdERC1155_
+    ) internal {
+        if (amount_ == 0) return;
+
+        if (bridgeType == NATIVE_VAULT) {
+            // Native tokens don't need a receive function
+        } else if (bridgeType == ERC20_VAULT) {
+            ERC20(token).safeTransferFrom(msg.sender, address(this), amount_);
+        } else if (bridgeType == ERC721_VAULT) {
+            ERC721(token).safeTransferFrom(msg.sender, address(this), tokenIdERC721_);
+        } else if (bridgeType == ERC1155_VAULT) {
+            ERC1155(token).safeTransferFrom(msg.sender, address(this), tokenIdERC1155_, amount_, "");
+        } else {
+            revert("Unsupported bridge type");
+        }
     }
 }
