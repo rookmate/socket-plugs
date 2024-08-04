@@ -10,7 +10,7 @@ import "solmate/tokens/ERC1155.sol";
 /**
  * @title Vault
  * @notice A contract which enables bridging a token to its sibling chains.
- * @dev This contract implements ISuperTokenOrVault to support message bridging through IMessageBridge compliant contracts.
+ * @dev This contract implements IBridge to support message bridging through IMessageBridge compliant contracts.
  */
 contract Vault is Base, TokenType {
     using SafeTransferLib for ERC20;
