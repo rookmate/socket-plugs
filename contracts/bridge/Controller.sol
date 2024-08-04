@@ -2,12 +2,13 @@
 pragma solidity 0.8.13;
 
 import "./Base.sol";
+import "../common/TokenType.sol";
 
-contract Controller is Base {
+contract Controller is Base, TokenType {
     uint256 public totalMinted;
 
     constructor(address token_) Base(token_) {
-        bridgeType = NORMAL_CONTROLLER;
+        bridgeType = _getBridgeType(token_, false);
     }
 
     /**

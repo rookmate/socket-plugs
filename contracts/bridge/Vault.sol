@@ -21,7 +21,7 @@ contract Vault is Base, TokenType {
      * @param token_ token contract address which is to be bridged.
      */
     constructor(address token_) Base(token_) {
-        bridgeType = _getBridgeType(token_);
+        bridgeType = _getBridgeType(token_, true);
     }
 
     /**

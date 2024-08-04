@@ -12,24 +12,41 @@ contract TokenType {
      * @dev This function returns the bridge type depending on the token address provided.
      *      It supports identifying native tokens (ETH), ERC-20, ERC-721, and ERC-1155 tokens.
      * @param token_ The address of the token to determine the bridge type for.
+     * @param isVault It is true when creating a Vault and false when creating a Controller
      * @return A bytes32 identifier representing the bridge type. Possible return values:
      *         - `NATIVE_VAULT` for ETH_ADDRESS.
-     *         - `ERC20_VAULT` for ERC-20 tokens.
-     *         - `ERC721_VAULT` for ERC-721 tokens.
-     *         - `ERC1155_VAULT` for ERC-1155 tokens.
+     *         - `NATIVE_CONTROLLER` for a unknown controller
+     *         - `ERC20_VAULT` or `ERC20_CONTROLLER` for ERC-20 tokens.
+     *         - `ERC721_VAULT` or `ERC721_CONTROLLER` for ERC-721 tokens.
+     *         - `ERC1155_VAULT` or `ERC721_CONTROLLER` for ERC-1155 tokens.
      *         - An empty string if none of the conditions are met (will not occur if the token is valid).
      */
-    function _getBridgeType(address token_) internal view returns (bytes32) {
-        if (token_ == ETH_ADDRESS) {
-            return NATIVE_VAULT;
-        } else if (isERC20(token_)) {
-            return ERC20_VAULT;
-        } else if (isERC721(token_)) {
-            return ERC721_VAULT;
-        } else if (isERC1155(token_)) {
-            return ERC1155_VAULT;
+    function _getBridgeType(
+        address token_,
+        bool isVault
+    ) internal view returns (bytes32) {
+        if (isVault) {
+            if (token_ == ETH_ADDRESS) {
+                return NATIVE_VAULT;
+            } else if (isERC20(token_)) {
+                return ERC20_VAULT;
+            } else if (isERC721(token_)) {
+                return ERC721_VAULT;
+            } else if (isERC1155(token_)) {
+                return ERC1155_VAULT;
+            } else {
+                return "";
+            }
         } else {
-            return "";
+            if (isERC20(token_)) {
+                return ERC20_CONTROLLER;
+            } else if (isERC721(token_)) {
+                return ERC721_CONTROLLER;
+            } else if (isERC1155(token_)) {
+                return ERC1155_CONTROLLER;
+            } else {
+                return NATIVE_CONTROLLER;
+            }
         }
     }
 
