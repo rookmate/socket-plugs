@@ -12,6 +12,8 @@ import "../interfaces/IHook.sol";
  */
 contract Super1155 is ERC1155, RescueBase {
     uint256 private _tokenIdCounter;
+    string public name;
+    string public symbol;
     // for all controller access (mint, burn)
     bytes32 constant CONTROLLER_ROLE = keccak256("CONTROLLER_ROLE");
 
@@ -19,18 +21,17 @@ contract Super1155 is ERC1155, RescueBase {
      * @notice constructor for creating a new SuperToken.
      * @param name_ token name
      * @param symbol_ token symbol
-     * @param initialSupplyHolder_ address to which initial supply will be minted
      * @param owner_ owner of this contract
-     * @param initialSupply_ initial supply of super token
      */
     constructor(
         string memory name_,
         string memory symbol_,
-        address initialSupplyHolder_,
-        address owner_,
-        uint256 initialSupply_
+        address owner_
     ) ERC1155() AccessControl(owner_) {
+        name = name_;
+        symbol = symbol_;
         _grantRole(RESCUE_ROLE, owner_);
+        _grantRole(CONTROLLER_ROLE, owner_);
     }
 
     function burn(
