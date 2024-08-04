@@ -3,7 +3,6 @@ pragma solidity 0.8.13;
 
 import "./Base.sol";
 import "../common/TokenType.sol";
-import "../interfaces/IConnector.sol";
 import "solmate/tokens/ERC20.sol";
 import "solmate/tokens/ERC721.sol";
 import "solmate/tokens/ERC1155.sol";
