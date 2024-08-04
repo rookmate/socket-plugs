@@ -30,9 +30,7 @@ contract Super721 is ERC721, RescueBase {
         _grantRole(CONTROLLER_ROLE, owner_);
     }
 
-    function burn(
-        uint256 tokenId
-    ) external onlyRole(CONTROLLER_ROLE) {
+    function burn(uint256 tokenId) external onlyRole(CONTROLLER_ROLE) {
         _burn(tokenId);
     }
 
